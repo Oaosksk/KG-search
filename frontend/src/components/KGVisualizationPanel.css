@@ -1,0 +1,123 @@
+.kg-visualization-panel {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  height: 100%;
+  min-height: 600px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  overflow: hidden;
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.kg-visualization-panel.maximized {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 9999;
+  border-radius: 0;
+  min-height: 100vh;
+}
+
+.kg-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.kg-visualization-panel h2 {
+  margin: 0;
+  color: #333;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.maximize-btn {
+  background: #f3f4f6;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 1.2rem;
+  color: #6b7280;
+  transition: all 0.2s;
+}
+
+.maximize-btn:hover {
+  background: #e5e7eb;
+  color: #374151;
+}
+
+.kg-visualization-panel svg {
+  flex: 1;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: #ffffff;
+  cursor: grab;
+  min-height: 400px;
+}
+
+.kg-visualization-panel svg:active {
+  cursor: grabbing;
+}
+
+/* Dark theme */
+body.dark-theme .kg-visualization-panel {
+  background: #1a1a1a;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+
+body.dark-theme .kg-visualization-panel h2 {
+  color: #e5e7eb;
+}
+
+body.dark-theme .maximize-btn {
+  background: #2a2a2a;
+  border-color: #374151;
+  color: #9ca3af;
+}
+
+body.dark-theme .maximize-btn:hover {
+  background: #374151;
+  color: #e5e7eb;
+}
+
+body.dark-theme .kg-visualization-panel svg {
+  background: #0f0f0f;
+  border-color: #2a2a2a;
+}
+
+/* Empty state */
+.kg-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: #9ca3af;
+  font-size: 0.95rem;
+}
+
+.kg-empty-state svg {
+  width: 60px;
+  height: 60px;
+  margin-bottom: 1rem;
+  opacity: 0.4;
+  border: none;
+  background: none;
+}
+
+body.dark-theme .kg-empty-state {
+  color: #6b7280;
+}

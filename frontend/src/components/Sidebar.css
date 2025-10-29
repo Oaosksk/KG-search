@@ -1,0 +1,232 @@
+.sidebar {
+  position: relative;
+  height: 100%;
+  background: white;
+  border-right: 1px solid #ddd;
+  transition: width 0.3s ease;
+  z-index: 100;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.sidebar.open {
+  width: 280px;
+}
+
+.sidebar.closed {
+  width: 50px;
+}
+
+.sidebar-toggle {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: #667eea;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  cursor: pointer;
+  z-index: 101;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: right 0.3s ease;
+}
+
+.sidebar.closed .sidebar-toggle {
+  right: 10px;
+}
+
+.sidebar-content {
+  padding: 2rem;
+  overflow-y: auto;
+  height: 100%;
+  opacity: 1;
+  transition: opacity 0.2s ease;
+}
+
+.sidebar.closed .sidebar-content {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.sidebar-section {
+  margin-bottom: 2rem;
+}
+
+.sidebar-section h3 {
+  font-size: 0.9rem;
+  color: #666;
+  margin-bottom: 0.5rem;
+  text-transform: uppercase;
+}
+
+.view-mode-buttons {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.view-mode-buttons button {
+  flex: 1;
+  padding: 0.5rem;
+  border: 1px solid #ddd;
+  background: white;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.view-mode-buttons button.active {
+  background: #667eea;
+  color: white;
+  border-color: #667eea;
+}
+
+.file-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  max-height: 200px;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.file-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.file-list::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+.file-list::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 3px;
+}
+
+.file-list::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+.file-list li {
+  padding: 0.75rem;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-bottom: 0.5rem;
+  background: #f9f9f9;
+  border-bottom: 1px solid #e5e5e5;
+  transition: background 0.2s;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.file-list li span {
+  flex: 1;
+}
+
+.delete-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 1rem;
+  padding: 0.25rem;
+  opacity: 0.6;
+  transition: opacity 0.2s;
+}
+
+.delete-btn:hover {
+  opacity: 1;
+}
+
+.file-list li:hover {
+  background: #e8e8e8;
+}
+
+.file-list li.selected {
+  background: #667eea;
+  color: white;
+  font-weight: 500;
+}
+
+.file-list li.empty {
+  color: #999;
+  cursor: default;
+  font-size: 0.85rem;
+  border-bottom: none;
+}
+
+.file-list li.synced-file {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.file-list li.synced-file span {
+  flex: 1;
+}
+
+.process-btn {
+  background: #4CAF50;
+  border: none;
+  cursor: pointer;
+  font-size: 0.9rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  color: white;
+  transition: background 0.2s;
+}
+
+.process-btn:hover {
+  background: #45a049;
+}
+
+body.dark-theme .sidebar {
+  background: #1e1e1e;
+  border-right-color: #333;
+}
+
+body.dark-theme .sidebar-section h3 {
+  color: #aaa;
+}
+
+body.dark-theme .view-mode-buttons button {
+  background: #2a2a2a;
+  border-color: #444;
+  color: #ddd;
+}
+
+body.dark-theme .view-mode-buttons button.active {
+  background: #667eea;
+  color: white;
+}
+
+body.dark-theme .file-list::-webkit-scrollbar-track {
+  background: #2a2a2a;
+}
+
+body.dark-theme .file-list::-webkit-scrollbar-thumb {
+  background: #555;
+}
+
+body.dark-theme .file-list::-webkit-scrollbar-thumb:hover {
+  background: #777;
+}
+
+body.dark-theme .file-list li {
+  background: #2a2a2a;
+  color: #ddd;
+  border-bottom-color: #444;
+}
+
+body.dark-theme .file-list li:hover {
+  background: #333;
+}
+
+body.dark-theme .file-list li.selected {
+  background: #667eea;
+  color: white;
+}

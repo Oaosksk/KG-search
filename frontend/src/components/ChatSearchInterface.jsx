@@ -86,7 +86,7 @@ export default function ChatSearchInterface({ onResults, onAllResults }) {
       <div className="chat-messages">
         {messages.length === 0 && (
           <div className="empty-state">
-            <h3>👋 Welcome to KG-Search</h3>
+            <h3>Welcome to KG-Search</h3>
             <p>Ask me anything about your documents</p>
           </div>
         )}

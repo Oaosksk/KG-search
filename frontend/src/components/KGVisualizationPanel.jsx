@@ -42,11 +42,20 @@ export default function KGVisualizationPanel({ data, viewMode }) {
     const nodes = data.nodes.map((n, i) => ({ id: i, ...n }))
     const links = data.edges || []
 
+    function boxForce() {
+      const padding = 80
+      for (let node of nodes) {
+        node.x = Math.max(padding, Math.min(width - padding, node.x))
+        node.y = Math.max(padding, Math.min(height - padding, node.y))
+      }
+    }
+
     const simulation = d3.forceSimulation(nodes)
-      .force('link', d3.forceLink(links).id(d => d.id).distance(120))
-      .force('charge', d3.forceManyBody().strength(-500))
+      .force('link', d3.forceLink(links).id(d => d.id).distance(150))
+      .force('charge', d3.forceManyBody().strength(-800))
       .force('center', d3.forceCenter(width / 2, height / 2))
-      .force('collision', d3.forceCollide().radius(45))
+      .force('collision', d3.forceCollide().radius(60))
+      .force('box', boxForce)
 
     // Links with subtle styling
     const link = g.append('g')
@@ -172,12 +181,13 @@ export default function KGVisualizationPanel({ data, viewMode }) {
       </div>
       {(!data || !data.nodes || data.nodes.length === 0) ? (
         <div className="kg-empty-state">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-            <circle cx="12" cy="12" r="10" strokeWidth="2"/>
-            <path d="M12 6v6l4 2" strokeWidth="2" strokeLinecap="round"/>
-          </svg>
+        
           <p>No knowledge graph data available</p>
-          <p style={{ fontSize: '0.85rem', marginTop: '0.5rem' }}>Upload a file or perform a search to see entities</p>
+          <p style={{ fontSize: '0.85rem', marginTop: '0.5rem', color: '#94a3b8' }}>
+            {viewMode === 'individual' 
+              ? 'This file has no processed data. Click the ⚙️ button to process it.'
+              : 'Upload a file or perform a search to see entities'}
+          </p>
         </div>
       ) : (
         <svg ref={svgRef} width="100%" height="100%"></svg>

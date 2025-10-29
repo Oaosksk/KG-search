@@ -39,7 +39,16 @@ async def search(request: SearchRequest, user: dict = Depends(get_current_user))
     # Regular hybrid search for other queries
     search_results = search_engine.hybrid_search(request.query, user_id, request.top_k)
     kg_data = kg_builder.query_graph(request.query, user_id)
-    answer_data = answer_generator.generate_answer(request.query, search_results)
+    
+    # Generate answer (with fallback)
+    try:
+        answer_data = answer_generator.generate_answer(request.query, search_results)
+    except Exception as e:
+        print(f"Answer generation failed: {e}")
+        answer_data = {
+            "answer": f"Found {len(search_results)} results for your query.",
+            "citations": []
+        }
     
     results = [
         SearchResult(

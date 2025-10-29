@@ -86,12 +86,68 @@ async def sync_google_drive(user: dict = Depends(get_current_user)):
         file_manager._save_registry()
         print(f"[SYNC] Synced {len(synced_files)} files: {synced_files}")
         
+        # Auto-process synced files
+        processed_count = 0
+        processing_errors = []
+        
+        for gdrive_file in gdrive_files:
+            try:
+                # Only process supported file types
+                mime_type = gdrive_file.get('mimeType', '')
+                if 'google-apps.spreadsheet' in mime_type or 'google-apps.document' in mime_type:
+                    print(f"[SYNC] Auto-processing: {gdrive_file['name']}")
+                    
+                    # Download and process
+                    if 'spreadsheet' in mime_type:
+                        export_mime = 'text/csv'
+                        ext = '.csv'
+                    elif 'document' in mime_type:
+                        export_mime = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+                        ext = '.docx'
+                    else:
+                        continue
+                    
+                    response = http_requests.get(
+                        f"https://www.googleapis.com/drive/v3/files/{gdrive_file['id']}/export",
+                        headers=headers,
+                        params={"mimeType": export_mime},
+                        timeout=30
+                    )
+                    
+                    if response.status_code == 200:
+                        from ..services.parser import parser
+                        from ..services.kg_builder import kg_builder
+                        from ..services.rag_engine import rag_engine
+                        from ..services.doc_type_detector import doc_detector
+                        import os
+                        
+                        temp_path = f"uploads/temp_{gdrive_file['id']}{ext}"
+                        with open(temp_path, 'wb') as f:
+                            f.write(response.content)
+                        
+                        parsed_data = parser.parse_file(temp_path)
+                        sample_content = str(parsed_data[0].get('content', ''))[:2000] if parsed_data else ""
+                        doc_info = doc_detector.detect_type(sample_content)
+                        doc_type = doc_info.get("type", "unknown")
+                        
+                        kg_builder.build_graph(parsed_data, gdrive_file['id'], user_id, doc_type)
+                        rag_engine.store_embeddings(parsed_data, gdrive_file['id'], user_id)
+                        
+                        os.remove(temp_path)
+                        processed_count += 1
+                        print(f"[SYNC] ✓ Processed: {gdrive_file['name']}")
+            except Exception as e:
+                error_msg = f"{gdrive_file['name']}: {str(e)}"
+                processing_errors.append(error_msg)
+                print(f"[SYNC] ✗ Failed to process {gdrive_file['name']}: {e}")
+        
         return {
             "status": "success",
-            "message": "Google Drive synced successfully",
+            "message": f"Synced {len(synced_files)} files, processed {processed_count}",
             "files_synced": len(synced_files),
+            "files_processed": processed_count,
             "files": synced_files,
-            "total_files": len(gdrive_files)
+            "processing_errors": processing_errors
         }
     except HTTPException:
         raise

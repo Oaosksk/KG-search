@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.api import auth, upload, search, sync, files, delete
+from app.api import auth, upload, search, sync, files, delete, process
 from app.core.config import settings
 
 app = FastAPI(title="KG-Search API", version="1.0.0")
@@ -19,6 +19,7 @@ app.include_router(search.router)
 app.include_router(sync.router)
 app.include_router(files.router)
 app.include_router(delete.router, prefix="/delete", tags=["delete"])
+app.include_router(process.router)
 
 @app.get("/")
 async def root():

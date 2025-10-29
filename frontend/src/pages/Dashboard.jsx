@@ -33,7 +33,7 @@ export default function Dashboard() {
 
   const handleNewResults = (data) => {
     setSearchResults(data)
-    setAllResults(prev => [...prev, data])
+    setAllResults([data])  // Replace with latest result only
     
     // Update KG visualization with data from search (combined mode)
     if (viewMode === 'combined') {

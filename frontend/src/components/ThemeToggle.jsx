@@ -27,7 +27,7 @@ export default function ThemeToggle() {
 
   return (
     <button className="theme-toggle" onClick={toggleTheme}>
-      {isDark ? '☀️' : '🌙'}
+      <span className="material-icons-outlined">{isDark ? 'light_mode' : 'dark_mode'}</span>
     </button>
   )
 }

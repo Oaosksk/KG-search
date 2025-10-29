@@ -81,11 +81,49 @@ export default function Sidebar({ onFileSelect, viewMode, onViewModeChange, onFi
   return (
     <div className={`sidebar ${isOpen ? 'open' : 'closed'}`}>
       <button className="sidebar-toggle" onClick={() => setIsOpen(!isOpen)}>
-        {isOpen ? '◀' : '▶'}
+        <span className="material-icons-outlined" style={{fontSize: '20px'}}>{isOpen ? 'chevron_left' : 'chevron_right'}</span>
       </button>
       
       {isOpen && (
         <div className="sidebar-content">
+          <div className="sidebar-section">
+            <button
+              onClick={async () => {
+                if (!confirm('Delete ALL data (uploaded files, synced files, graphs, embeddings)? This cannot be undone!')) return
+                try {
+                  await filesAPI.deleteAllData()
+                  alert('All data deleted successfully')
+                  fetchFiles()
+                  onFileSelect(null)
+                } catch (error) {
+                  alert('Failed to delete data: ' + error.message)
+                }
+              }}
+              style={{
+                width: '100%',
+                padding: '8px',
+                marginBottom: '15px',
+                background: 'transparent',
+                color: '#e5e7eb',
+                border: '1px solid #6b7280',
+                borderRadius: '6px',
+                cursor: 'pointer',
+                fontWeight: '500',
+                transition: 'all 0.2s'
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.background = '#6b7280'
+                e.target.style.color = 'white'
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.background = 'transparent'
+                e.target.style.color = '#e5e7eb'
+              }}
+            >
+              <span className="material-icons-outlined" style={{fontSize: '18px', verticalAlign: 'middle', marginRight: '4px'}}>delete_sweep</span>Clear All Data
+            </button>
+          </div>
+
           <div className="sidebar-section">
             <h3>View Mode</h3>
             <div className="view-mode-buttons">
@@ -115,7 +153,7 @@ export default function Sidebar({ onFileSelect, viewMode, onViewModeChange, onFi
                     key={idx} 
                     className={selectedFile?.file_id === file.file_id ? 'selected' : ''}
                   >
-                    <span onClick={() => onFileSelect(file)}>📄 {file.filename}</span>
+                    <span onClick={() => onFileSelect(file)}><span className="material-icons-outlined" style={{fontSize: '18px', verticalAlign: 'middle', marginRight: '8px'}}>description</span>{file.filename}</span>
                     <button 
                       className="delete-btn"
                       onClick={(e) => {
@@ -124,7 +162,7 @@ export default function Sidebar({ onFileSelect, viewMode, onViewModeChange, onFi
                       }}
                       title="Delete file"
                     >
-                      🗑️
+                      <span className="material-icons-outlined" style={{fontSize: '16px'}}>delete</span>
                     </button>
                   </li>
                 ))
@@ -134,6 +172,46 @@ export default function Sidebar({ onFileSelect, viewMode, onViewModeChange, onFi
 
           <div className="sidebar-section">
             <h3>Synced Files</h3>
+            {files.synced.length > 0 && (
+              <button 
+                className="process-all-btn"
+                onClick={async () => {
+                  try {
+                    const { data } = await syncAPI.processAllSynced()
+                    alert(data.message)
+                    fetchFiles()
+                  } catch (error) {
+                    alert('Failed to process files: ' + error.message)
+                  }
+                }}
+                style={{
+                  width: '100%',
+                  padding: '10px',
+                  marginBottom: '12px',
+                  background: 'transparent',
+                  color: '#e5e7eb',
+                  border: '1px solid #8b7355',
+                  borderRadius: '6px',
+                  cursor: 'pointer',
+                  fontWeight: '500',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '6px',
+                  transition: 'all 0.2s'
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.background = '#8b7355'
+                  e.target.style.color = 'white'
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.background = 'transparent'
+                  e.target.style.color = '#e5e7eb'
+                }}
+              >
+                <span className="material-icons-outlined" style={{fontSize: '18px'}}>play_arrow</span>Process All
+              </button>
+            )}
             <ul className="file-list">
               {files.synced.length === 0 ? (
                 <li className="empty">No synced files</li>
@@ -142,18 +220,31 @@ export default function Sidebar({ onFileSelect, viewMode, onViewModeChange, onFi
                   <li 
                     key={idx} 
                     className={`synced-file ${selectedFile?.file_id === file.file_id ? 'selected' : ''}`}
+                    style={{ opacity: file.processed ? 1 : 0.6 }}
                   >
-                    <span onClick={() => onFileSelect(file)}>☁️ {file.filename}</span>
-                    <button 
-                      className="process-btn"
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        handleProcess(file.file_id)
-                      }}
-                      title="Download and process file"
-                    >
-                      ⚙️
-                    </button>
+                    <span onClick={() => onFileSelect(file)} style={{display: 'flex', alignItems: 'center'}}><span className="material-icons-outlined" style={{fontSize: '18px', marginRight: '8px'}}>cloud</span><span style={{overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap'}}>{file.filename}</span></span>
+                    <div style={{display: 'flex', gap: '4px', flexShrink: 0}}>
+                      <button 
+                        className="process-btn"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          handleProcess(file.file_id)
+                        }}
+                        title={file.processed ? 'Reprocess file' : 'Process file'}
+                      >
+                        <span className="material-icons-outlined" style={{fontSize: '16px'}}>sync</span>
+                      </button>
+                      <button 
+                        className="delete-btn"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          handleDelete(file.file_id)
+                        }}
+                        title="Delete file"
+                      >
+                        <span className="material-icons-outlined" style={{fontSize: '16px'}}>delete</span>
+                      </button>
+                    </div>
                   </li>
                 ))
               )}

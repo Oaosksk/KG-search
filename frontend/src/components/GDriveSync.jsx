@@ -27,6 +27,14 @@ export default function GDriveSync() {
       setSynced(true)
       setEnabled(true)
       
+      // Show processing results
+      const msg = `✓ Synced ${data.files_synced} files\n✓ Processed ${data.files_processed} files`
+      console.log(msg, data)
+      
+      if (data.processing_errors && data.processing_errors.length > 0) {
+        console.warn('Processing errors:', data.processing_errors)
+      }
+      
       window.dispatchEvent(new CustomEvent('driveSync', { detail: data }))
       
       setTimeout(() => setSyncing(false), 1000)

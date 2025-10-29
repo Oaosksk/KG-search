@@ -4,6 +4,7 @@ import pickle
 from pathlib import Path
 from typing import List, Dict, Any
 from .llm_entity_extractor import llm_extractor
+from .pattern_extractor import pattern_extractor
 from .supabase_client import supabase_client
 
 class KGBuilder:
@@ -37,19 +38,27 @@ class KGBuilder:
         return entities
     
     def build_graph(self, data: List[Dict[str, Any]], file_id: str, user_id: str, doc_type: str = "unknown"):
+        if not data:
+            print(f"⚠️ No data to process for file {file_id}")
+            return {"nodes": 0, "doc_type": doc_type}
+        
         if user_id not in self.graphs:
             self.graphs[user_id] = nx.Graph()
         
         G = self.graphs[user_id]
         nodes_added = 0
+        detected_type = doc_type
         
         for item in data:
             content = str(item.get('content', ''))
             
+            # Skip empty content
+            if not content or content.strip() in ['', 'nan', 'None', 'Nothing']:
+                continue
+            
             # Try LLM extraction first, fallback to spaCy
             entities = []
             relations = []
-            detected_type = doc_type
             
             if llm_extractor.enabled:
                 try:
@@ -58,9 +67,21 @@ class KGBuilder:
                     relations = llm_result.get("relations", [])
                     detected_type = llm_result.get("doc_type", doc_type)
                 except Exception as e:
-                    print(f"LLM extraction failed, using spaCy: {e}")
+                    print(f"LLM extraction failed: {e}")
             
-            # Fallback to spaCy if LLM failed or disabled
+            # Try pattern extractor for structured data
+            if not entities and ':' in content:
+                try:
+                    pattern_result = pattern_extractor.extract_entities_and_relations(content)
+                    entities = pattern_result.get("entities", [])
+                    relations = pattern_result.get("relations", [])
+                    detected_type = pattern_result.get("doc_type", doc_type)
+                    if entities:
+                        print(f"Pattern extractor found {len(entities)} entities")
+                except Exception as e:
+                    print(f"Pattern extraction failed: {e}")
+            
+            # Fallback to spaCy if all else failed
             if not entities:
                 entities = self.extract_entities(content, use_llm=False)
                 detected_type = doc_type
@@ -248,9 +269,10 @@ class KGBuilder:
                         'relation': edge_data.get('relation', 'related')
                     }).execute()
                 
-                print(f"✅ Saved {G.number_of_nodes()} nodes and {G.number_of_edges()} edges to Supabase")
+                print(f"✅ Saved to Supabase")
             except Exception as e:
-                print(f"⚠️ Failed to save to Supabase: {e}")
+                if '23505' not in str(e):
+                    print(f"⚠️ Supabase error: {e}")
     
     def _load_graph(self, user_id: str):
         graph_path = self.storage_dir / f"{user_id}.pkl"

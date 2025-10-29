@@ -53,10 +53,11 @@ class HybridSearchEngine:
             })
         
         # Knowledge graph expansion
-        for idx, result in enumerate(kg_results[:top_k]):
-            score = self.kg_weight * (1 - idx / max(len(kg_results), 1))
+        kg_nodes = kg_results.get('nodes', [])
+        for idx, result in enumerate(kg_nodes[:top_k]):
+            score = self.kg_weight * (1 - idx / max(len(kg_nodes), 1))
             combined.append({
-                "content": str(result.get("metadata", {})),
+                "content": str(result),
                 "score": score,
                 "source": "kg",
                 "metadata": result

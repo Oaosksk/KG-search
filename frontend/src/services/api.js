@@ -35,13 +35,16 @@ export const searchAPI = {
 export const filesAPI = {
   listFiles: () => api.get('/files/list'),
   getFileKG: (fileId) => api.get(`/files/kg/${fileId}`),
-  deleteFile: (fileId) => api.delete(`/delete/file/${fileId}`)
+  deleteFile: (fileId) => api.delete(`/delete/file/${fileId}`),
+  deleteAllData: () => api.delete('/delete/all'),
+  deleteSyncedFiles: () => api.delete('/delete/synced')
 }
 
 export const syncAPI = {
   syncGoogleDrive: () => api.post('/sync/gdrive'),
   getSyncStatus: () => api.get('/sync/status'),
-  processGDriveFile: (fileId) => api.post(`/sync/process/${fileId}`)
+  processGDriveFile: (fileId) => api.post(`/sync/process/${fileId}`),
+  processAllSynced: () => api.post('/process/all-synced')
 }
 
 export default api

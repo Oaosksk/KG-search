@@ -5,7 +5,7 @@
   border-right: 1px solid #ddd;
   transition: width 0.3s ease;
   z-index: 100;
-  overflow: hidden;
+  overflow: visible;
   flex-shrink: 0;
 }
 
@@ -19,10 +19,9 @@
 
 .sidebar-toggle {
   position: absolute;
-  right: 10px;
-  top: 50%;
-  transform: translateY(-50%);
-  background: #667eea;
+  right: -15px;
+  top: 20px;
+  background: #3b82f6;
   color: white;
   border: none;
   border-radius: 50%;
@@ -33,11 +32,24 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: right 0.3s ease;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+.sidebar-toggle:hover {
+  background: #2563eb;
+}
+
+body.dark-theme .sidebar-toggle {
+  background: #8b7355;
+}
+
+body.dark-theme .sidebar-toggle:hover {
+  background: #a0846a;
 }
 
 .sidebar.closed .sidebar-toggle {
-  right: 10px;
+  right: -15px;
 }
 
 .sidebar-content {
@@ -79,9 +91,9 @@
 }
 
 .view-mode-buttons button.active {
-  background: #667eea;
+  background: #3b82f6;
   color: white;
-  border-color: #667eea;
+  border-color: #3b82f6;
 }
 
 .file-list {
@@ -103,12 +115,12 @@
 }
 
 .file-list::-webkit-scrollbar-thumb {
-  background: #888;
+  background: #9ca3af;
   border-radius: 3px;
 }
 
 .file-list::-webkit-scrollbar-thumb:hover {
-  background: #555;
+  background: #6b7280;
 }
 
 .file-list li {
@@ -116,30 +128,38 @@
   border-radius: 4px;
   cursor: pointer;
   margin-bottom: 0.5rem;
-  background: #f9f9f9;
-  border-bottom: 1px solid #e5e5e5;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
   transition: background 0.2s;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 0.5rem;
 }
 
-.file-list li span {
+.file-list li > span {
   flex: 1;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
 }
 
 .delete-btn {
   background: transparent;
   border: none;
   cursor: pointer;
-  font-size: 1rem;
   padding: 0.25rem;
-  opacity: 0.6;
-  transition: opacity 0.2s;
+  color: #9ca3af;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .delete-btn:hover {
-  opacity: 1;
+  background: rgba(239, 68, 68, 0.1);
+  border-radius: 4px;
+  color: #ef4444;
 }
 
 .file-list li:hover {
@@ -147,16 +167,17 @@
 }
 
 .file-list li.selected {
-  background: #667eea;
+  background: #3b82f6;
   color: white;
   font-weight: 500;
 }
 
 .file-list li.empty {
-  color: #999;
+  color: #9ca3af;
   cursor: default;
   font-size: 0.85rem;
-  border-bottom: none;
+  border: 1px solid #e5e7eb;
+  justify-content: center;
 }
 
 .file-list li.synced-file {
@@ -170,63 +191,91 @@
 }
 
 .process-btn {
-  background: #4CAF50;
+  background: transparent;
   border: none;
   cursor: pointer;
-  font-size: 0.9rem;
-  padding: 0.25rem 0.5rem;
-  border-radius: 4px;
-  color: white;
-  transition: background 0.2s;
+  padding: 0.25rem;
+  color: #3b82f6;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .process-btn:hover {
-  background: #45a049;
+  background: rgba(59, 130, 246, 0.1);
+  border-radius: 4px;
 }
 
 body.dark-theme .sidebar {
-  background: #1e1e1e;
-  border-right-color: #333;
+  background: #2a2a2a;
+  border-right-color: #3a3a3a;
 }
 
 body.dark-theme .sidebar-section h3 {
-  color: #aaa;
+  color: #9ca3af;
 }
 
 body.dark-theme .view-mode-buttons button {
-  background: #2a2a2a;
-  border-color: #444;
-  color: #ddd;
+  background: #1a1a1a;
+  border-color: #3a3a3a;
+  color: #e5e7eb;
 }
 
 body.dark-theme .view-mode-buttons button.active {
-  background: #667eea;
+  background: #8b7355;
   color: white;
+  border-color: #8b7355;
 }
 
 body.dark-theme .file-list::-webkit-scrollbar-track {
-  background: #2a2a2a;
+  background: #1a1a1a;
 }
 
 body.dark-theme .file-list::-webkit-scrollbar-thumb {
-  background: #555;
+  background: #4a4a4a;
 }
 
 body.dark-theme .file-list::-webkit-scrollbar-thumb:hover {
-  background: #777;
+  background: #5a5a5a;
 }
 
 body.dark-theme .file-list li {
-  background: #2a2a2a;
-  color: #ddd;
-  border-bottom-color: #444;
+  background: #1a1a1a;
+  color: #e5e7eb;
+  border-color: #3a3a3a;
+}
+
+body.dark-theme .delete-btn {
+  color: #6b7280;
+}
+
+body.dark-theme .delete-btn:hover {
+  background: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+}
+
+body.dark-theme .process-btn {
+  color: #8b7355;
+}
+
+body.dark-theme .process-btn:hover {
+  background: rgba(139, 115, 85, 0.15);
+}
+
+body.dark-theme .file-list li.selected .material-icons-outlined {
+  color: white;
 }
 
 body.dark-theme .file-list li:hover {
-  background: #333;
+  background: #333333;
 }
 
 body.dark-theme .file-list li.selected {
-  background: #667eea;
+  background: #8b7355;
   color: white;
+}
+
+body.dark-theme .sidebar-section button .material-icons-outlined {
+  color: inherit;
 }

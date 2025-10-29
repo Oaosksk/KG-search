@@ -2,8 +2,12 @@ import pandas as pd
 import json
 from pathlib import Path
 from docx import Document
-from PyPDF2 import PdfReader
 from typing import List, Dict, Any
+
+try:
+    from PyPDF2 import PdfReader
+except ImportError:
+    PdfReader = None
 
 class Parser:
     def parse_file(self, file_path: str) -> List[Dict[str, Any]]:
@@ -26,11 +30,36 @@ class Parser:
     
     def _parse_csv(self, file_path: str) -> List[Dict[str, Any]]:
         df = pd.read_csv(file_path)
-        return df.to_dict('records')
+        if df.empty:
+            return []
+        
+        # Convert each row to a content string for better entity extraction
+        records = []
+        for _, row in df.iterrows():
+            # Create a readable content string from the row
+            content_parts = [f"{col}: {val}" for col, val in row.items() if pd.notna(val)]
+            if content_parts:
+                records.append({
+                    'content': ' | '.join(content_parts),
+                    **row.to_dict()
+                })
+        return records if records else df.to_dict('records')
     
     def _parse_excel(self, file_path: str) -> List[Dict[str, Any]]:
         df = pd.read_excel(file_path)
-        return df.to_dict('records')
+        if df.empty:
+            return []
+        
+        # Convert each row to a content string
+        records = []
+        for _, row in df.iterrows():
+            content_parts = [f"{col}: {val}" for col, val in row.items() if pd.notna(val)]
+            if content_parts:
+                records.append({
+                    'content': ' | '.join(content_parts),
+                    **row.to_dict()
+                })
+        return records if records else df.to_dict('records')
     
     def _parse_json(self, file_path: str) -> List[Dict[str, Any]]:
         with open(file_path, 'r') as f:
@@ -63,6 +92,8 @@ class Parser:
         return [{"content": text}]
     
     def _parse_pdf(self, file_path: str) -> List[Dict[str, Any]]:
+        if PdfReader is None:
+            raise ValueError("PyPDF2 not installed. Install with: pip install PyPDF2")
         reader = PdfReader(file_path)
         text = "\n".join([page.extract_text() for page in reader.pages])
         return [{"content": text}]

@@ -12,15 +12,15 @@
 }
 
 .chat-input-form .upload-btn {
-  background: #667eea;
-  color: white;
-  border: none;
+  background: transparent;
+  color: #8b7355;
+  border: 1px solid #8b7355;
   padding: 0;
   border-radius: 50%;
   cursor: pointer;
   font-size: 1.5rem;
   font-weight: bold;
-  transition: background 0.3s;
+  transition: all 0.3s;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -30,7 +30,8 @@
 }
 
 .chat-input-form .upload-btn:hover {
-  background: #5568d3;
+  background: #8b7355;
+  color: white;
 }
 
 .chat-input {
@@ -49,14 +50,14 @@
 }
 
 .send-btn {
-  background: #667eea;
-  color: white;
-  border: none;
+  background: transparent;
+  color: #8b7355;
+  border: 1px solid #8b7355;
   padding: 0;
   border-radius: 50%;
   cursor: pointer;
   font-size: 1.2rem;
-  transition: background 0.3s;
+  transition: all 0.3s;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -66,7 +67,8 @@
 }
 
 .send-btn:hover {
-  background: #5568d3;
+  background: #8b7355;
+  color: white;
 }
 
 .send-btn:disabled,
@@ -84,12 +86,32 @@ body.dark-theme .chat-input-form {
 }
 
 body.dark-theme .chat-input {
-  background: #2a2a2a;
-  border-color: #444;
-  color: #ddd;
+  background: #1a1a1a;
+  border-color: #3a3a3a;
+  color: #e5e7eb;
 }
 
 body.dark-theme .chat-input:focus {
-  border-color: #8b9cff;
-  background: #333;
+  border-color: #8b7355;
+  background: #1a1a1a;
+}
+
+body.dark-theme .upload-btn {
+  color: #8b7355;
+  border-color: #8b7355;
+}
+
+body.dark-theme .upload-btn:hover {
+  background: #8b7355;
+  color: white;
+}
+
+body.dark-theme .send-btn {
+  color: #8b7355;
+  border-color: #8b7355;
+}
+
+body.dark-theme .send-btn:hover {
+  background: #8b7355;
+  color: white;
 }

@@ -24,16 +24,25 @@ dist/
 
 # Uploads
 uploads/
+file_registry.json
 *.log
 
 # Storage and Data
 storage/
 *.pkl
 *.index
+*.faiss
 
-# Test Results
-tests/test_results.json
-tests/test_output.txt
+# Temporary files
+temp/
+
+# Tests
+tests/
+
+# Debug and Scripts (not for production)
+debug/
+scripts/
+test_*.py
 
 # Documentation and Scripts
 *.md

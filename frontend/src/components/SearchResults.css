@@ -68,3 +68,30 @@
 .source-card small {
   color: #999;
 }
+
+body.dark-theme .search-results {
+  background: #2a2a2a;
+  border: 1px solid #3a3a3a;
+}
+
+body.dark-theme .answer-section h2,
+body.dark-theme .sources-section h3 {
+  color: #e5e7eb;
+}
+
+body.dark-theme .answer-section p {
+  color: #d1d5db;
+}
+
+body.dark-theme .source-card {
+  background: #1f1f1f;
+  border: 1px solid #3a3a3a;
+}
+
+body.dark-theme .source-card p {
+  color: #d1d5db;
+}
+
+body.dark-theme .source-card small {
+  color: #9ca3af;
+}

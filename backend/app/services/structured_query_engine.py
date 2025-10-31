@@ -21,17 +21,22 @@ class StructuredQueryEngine:
         for node, data in G.nodes(data=True):
             entity_text = data.get('entity_text', '').lower()
             doc_type = data.get('doc_type', '').lower()
+            entity_type_lower = entity_type.lower()
             
-            # Match by entity type or document type
-            if entity_type.lower() in entity_text or entity_type.lower() in doc_type:
+            # Match by entity type or document type (handle singular/plural)
+            if (entity_type_lower in entity_text or entity_type_lower in doc_type or
+                entity_type_lower.rstrip('s') in entity_text or entity_type_lower.rstrip('s') in doc_type):
                 matching_nodes.append(data)
         
         # Apply time filter if provided
         if time_filter:
             matching_nodes = self._apply_time_filter(matching_nodes, time_filter)
         
+        # Extract unique IDs
+        ids = self._extract_ids(matching_nodes)
+        
         return {
-            "count": len(matching_nodes),
+            "count": len(ids) if ids else len(matching_nodes),
             "items": matching_nodes[:10],  # Return first 10 for display
             "query_type": "count"
         }
@@ -72,5 +77,15 @@ class StructuredQueryEngine:
                 filtered.append(node)
         
         return filtered
+    
+    def _extract_ids(self, nodes: List[Dict]) -> List[str]:
+        """Extract order/deal IDs from nodes"""
+        ids = []
+        for node in nodes:
+            text = node.get('entity_text', '')
+            # Extract ID patterns (501, 502, 101, 102, etc.)
+            matches = re.findall(r'\b(\d{3})\b', text)
+            ids.extend(matches)
+        return list(set(ids))  # Unique IDs
 
 structured_query_engine = StructuredQueryEngine()

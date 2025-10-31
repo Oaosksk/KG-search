@@ -25,3 +25,20 @@ dist/
 # Uploads
 uploads/
 *.log
+
+# Storage and Data
+storage/
+*.pkl
+*.index
+
+# Test Results
+tests/test_results.json
+tests/test_output.txt
+
+# Documentation and Scripts
+*.md
+*.sh
+*.txt
+*.sql
+MD/
+.gitignore

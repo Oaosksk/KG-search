@@ -18,9 +18,10 @@ class HybridSearchEngine:
             self.bm25_indices[user_id] = BM25Okapi(corpus)
             self.bm25_corpus[user_id] = rag_engine.documents[user_id]
     
-    def hybrid_search(self, query: str, user_id: str, top_k: int = 10) -> List[Dict[str, Any]]:
-        dense_results = rag_engine.search_similar(query, user_id, top_k)
-        kg_results = kg_builder.query_graph(query, user_id)
+    def hybrid_search(self, query: str, user_id: str, top_k: int = 10, doc_type_filter: str = None) -> List[Dict[str, Any]]:
+        # Filter documents by doc_type before searching
+        dense_results = rag_engine.search_similar(query, user_id, top_k, doc_type_filter)
+        kg_results = kg_builder.query_graph(query, user_id, doc_type_filter)
         
         combined = []
         
@@ -29,20 +30,40 @@ class HybridSearchEngine:
             self._update_bm25(user_id)
         
         if user_id in self.bm25_indices:
-            bm25_scores = self.bm25_indices[user_id].get_scores(query.split())
-            top_bm25_idx = np.argsort(bm25_scores)[-top_k:][::-1]
-            
-            for idx in top_bm25_idx:
-                if idx < len(self.bm25_corpus[user_id]):
-                    doc = self.bm25_corpus[user_id][idx]
-                    combined.append({
-                        "content": doc.get('chunk', ''),
-                        "score": self.bm25_weight * float(bm25_scores[idx]),
-                        "source": "bm25",
-                        "metadata": doc
-                    })
+            # Filter corpus by doc_type if specified
+            if doc_type_filter:
+                filtered_corpus = [(i, doc) for i, doc in enumerate(self.bm25_corpus[user_id])
+                                  if doc.get('metadata', {}).get('doc_type') == doc_type_filter]
+                if filtered_corpus:
+                    filtered_indices, filtered_docs = zip(*filtered_corpus)
+                    bm25_scores = self.bm25_indices[user_id].get_scores(query.split())
+                    filtered_scores = [bm25_scores[i] for i in filtered_indices]
+                    top_bm25_idx = np.argsort(filtered_scores)[-top_k:][::-1]
+                    
+                    for idx in top_bm25_idx:
+                        if idx < len(filtered_docs):
+                            doc = filtered_docs[idx]
+                            combined.append({
+                                "content": doc.get('chunk', ''),
+                                "score": self.bm25_weight * float(filtered_scores[idx]),
+                                "source": "bm25",
+                                "metadata": doc
+                            })
+            else:
+                bm25_scores = self.bm25_indices[user_id].get_scores(query.split())
+                top_bm25_idx = np.argsort(bm25_scores)[-top_k:][::-1]
+                
+                for idx in top_bm25_idx:
+                    if idx < len(self.bm25_corpus[user_id]):
+                        doc = self.bm25_corpus[user_id][idx]
+                        combined.append({
+                            "content": doc.get('chunk', ''),
+                            "score": self.bm25_weight * float(bm25_scores[idx]),
+                            "source": "bm25",
+                            "metadata": doc
+                        })
         
-        # Dense vector search
+        # Dense vector search (already filtered by doc_type)
         for idx, result in enumerate(dense_results):
             score = self.dense_weight * result.get("score", 0.5)
             combined.append({

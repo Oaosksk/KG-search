@@ -52,18 +52,38 @@ class RAGEngine:
         
         self._save_index(user_id)
     
-    def search_similar(self, query: str, user_id: str, top_k: int = 10) -> List[Dict[str, Any]]:
+    def search_similar(self, query: str, user_id: str, top_k: int = 10, doc_type_filter: str = None) -> List[Dict[str, Any]]:
         if user_id not in self.indices:
             self._load_index(user_id)
         
         if user_id not in self.indices or self.indices[user_id].ntotal == 0:
             return []
         
-        query_embedding = self.generate_embedding(query).reshape(1, -1)
-        distances, indices = self.indices[user_id].search(query_embedding, min(top_k * 2, self.indices[user_id].ntotal))
+        # Filter documents by doc_type if specified
+        if doc_type_filter and user_id in self.documents:
+            filtered_indices = [i for i, doc in enumerate(self.documents[user_id])
+                              if doc.get('metadata', {}).get('doc_type') == doc_type_filter]
+            
+            if not filtered_indices:
+                return []
+            
+            # Search only in filtered documents
+            query_embedding = self.generate_embedding(query).reshape(1, -1)
+            distances, indices = self.indices[user_id].search(query_embedding, min(top_k * 2, self.indices[user_id].ntotal))
+            
+            # Filter results to only include documents with matching doc_type
+            candidates = [(self.documents[user_id][idx], 1 / (1 + distances[0][i])) 
+                         for i, idx in enumerate(indices[0]) 
+                         if idx < len(self.documents[user_id]) and idx in filtered_indices]
+        else:
+            query_embedding = self.generate_embedding(query).reshape(1, -1)
+            distances, indices = self.indices[user_id].search(query_embedding, min(top_k * 2, self.indices[user_id].ntotal))
+            
+            candidates = [(self.documents[user_id][idx], 1 / (1 + distances[0][i])) 
+                         for i, idx in enumerate(indices[0]) if idx < len(self.documents[user_id])]
         
-        candidates = [(self.documents[user_id][idx], 1 / (1 + distances[0][i])) 
-                     for i, idx in enumerate(indices[0]) if idx < len(self.documents[user_id])]
+        if not candidates:
+            return []
         
         pairs = [[query, doc.get('chunk', '')] for doc, _ in candidates]
         scores = self.reranker.predict(pairs)

@@ -21,7 +21,12 @@ export default function SearchResultsCard({ allResults }) {
       <div className="results-scroll-container">
         {allResults.map((resultSet, setIdx) => (
           <div key={setIdx} className="result-set">
-            {resultSet.results && resultSet.results.map((result, idx) => {
+            {resultSet.answer && (
+              <div className="answer-display" style={{whiteSpace: 'pre-wrap', padding: '1rem', background: '#f0f9ff', borderRadius: '8px', marginBottom: '1rem', fontSize: '1.1rem', fontWeight: '500'}}>
+                <strong style={{color: '#0369a1'}}>Answer:</strong> {resultSet.answer}
+              </div>
+            )}
+            {false && resultSet.results && resultSet.results.map((result, idx) => {
               // Format content based on source
               let displayContent = result.content
               if (result.source === 'kg' && typeof result.content === 'string' && result.content.includes("'entity_text'")) {

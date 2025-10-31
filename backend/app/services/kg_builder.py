@@ -65,7 +65,8 @@ class KGBuilder:
                     llm_result = llm_extractor.extract_entities_and_relations(content, doc_type)
                     entities = llm_result.get("entities", [])
                     relations = llm_result.get("relations", [])
-                    detected_type = llm_result.get("doc_type", doc_type)
+                    # Use passed doc_type, not LLM-detected
+                    detected_type = doc_type
                 except Exception as e:
                     print(f"LLM extraction failed: {e}")
             
@@ -75,7 +76,6 @@ class KGBuilder:
                     pattern_result = pattern_extractor.extract_entities_and_relations(content)
                     entities = pattern_result.get("entities", [])
                     relations = pattern_result.get("relations", [])
-                    detected_type = pattern_result.get("doc_type", doc_type)
                     if entities:
                         print(f"Pattern extractor found {len(entities)} entities")
                 except Exception as e:
@@ -84,7 +84,6 @@ class KGBuilder:
             # Fallback to spaCy if all else failed
             if not entities:
                 entities = self.extract_entities(content, use_llm=False)
-                detected_type = doc_type
             
             # Add nodes with normalized values
             for entity in entities:
@@ -167,7 +166,7 @@ class KGBuilder:
         self._save_graph(user_id)
         return {"nodes": nodes_added, "doc_type": detected_type}
     
-    def query_graph(self, query: str, user_id: str) -> Dict[str, Any]:
+    def query_graph(self, query: str, user_id: str, doc_type_filter: str = None) -> Dict[str, Any]:
         if user_id not in self.graphs:
             self._load_graph(user_id)
         
@@ -179,17 +178,24 @@ class KGBuilder:
         
         G = self.graphs[user_id]
         
-        # If no query entities, return all nodes (limited)
+        # Filter nodes by doc_type if specified
+        if doc_type_filter:
+            filtered_nodes = [(node, data) for node, data in G.nodes(data=True)
+                            if data.get('doc_type', '').lower() == doc_type_filter.lower()]
+        else:
+            filtered_nodes = list(G.nodes(data=True))
+        
+        # If no query entities, return filtered nodes (limited)
         if not entity_texts:
-            all_nodes = list(G.nodes(data=True))[:50]
+            limited_nodes = filtered_nodes[:50]
             nodes = [{"entity_text": data.get('entity_text', 'Unknown'),
                      "entity_type": data.get('entity_type', 'UNKNOWN'),
                      "entity_value": data.get('entity_value', '')} 
-                    for node, data in all_nodes]
+                    for node, data in limited_nodes]
             
             edges = []
-            node_ids = [n[0] for n in all_nodes]
-            for i, (node, _) in enumerate(all_nodes):
+            node_ids = [n[0] for n in limited_nodes]
+            for i, (node, _) in enumerate(limited_nodes):
                 for neighbor in G.neighbors(node):
                     if neighbor in node_ids:
                         j = node_ids.index(neighbor)
@@ -202,20 +208,21 @@ class KGBuilder:
             
             return {"nodes": nodes, "edges": edges}
         
-        # Find matching nodes and neighbors
+        # Find matching nodes and neighbors (from filtered set)
         matched_nodes = []
         node_map = {}
+        filtered_node_ids = [n[0] for n in filtered_nodes]
         
-        for node, data in G.nodes(data=True):
+        for node, data in filtered_nodes:
             entity_text = data.get('entity_text', '').lower()
             if any(et in entity_text for et in entity_texts):
                 idx = len(matched_nodes)
                 node_map[node] = idx
                 matched_nodes.append((node, data))
                 
-                # Add neighbors
+                # Add neighbors (only if they're in the filtered set)
                 for neighbor in G.neighbors(node):
-                    if neighbor not in node_map:
+                    if neighbor not in node_map and neighbor in filtered_node_ids:
                         idx = len(matched_nodes)
                         node_map[neighbor] = idx
                         matched_nodes.append((neighbor, G.nodes[neighbor]))
@@ -250,6 +257,17 @@ class KGBuilder:
             try:
                 G = self.graphs[user_id]
                 for node, data in G.nodes(data=True):
+                    # Convert metadata to JSON-serializable format
+                    metadata = data.get('metadata', {})
+                    clean_metadata = {}
+                    for k, v in metadata.items():
+                        if hasattr(v, 'isoformat'):  # Timestamp/datetime
+                            clean_metadata[k] = v.isoformat()
+                        elif isinstance(v, (str, int, float, bool, type(None))):
+                            clean_metadata[k] = v
+                        else:
+                            clean_metadata[k] = str(v)
+                    
                     supabase_client.client.table('kg_nodes').upsert({
                         'user_id': user_id,
                         'node_id': node,
@@ -258,7 +276,7 @@ class KGBuilder:
                         'entity_value': data.get('entity_value'),
                         'file_id': data.get('file_id'),
                         'doc_type': data.get('doc_type'),
-                        'metadata': data.get('metadata', {})
+                        'metadata': clean_metadata
                     }).execute()
                 
                 for source, target, edge_data in G.edges(data=True):

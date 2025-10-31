@@ -33,6 +33,7 @@ async def search(request: SearchRequest, user: dict = Depends(get_current_user))
             answer=answer,
             results=[],
             kg_entities=structured_result.get('items', []),
+            kg_data={"nodes": structured_result.get('items', []), "edges": []},
             citations=[]
         )
     
@@ -50,14 +51,25 @@ async def search(request: SearchRequest, user: dict = Depends(get_current_user))
             "citations": []
         }
     
-    results = [
-        SearchResult(
-            content=r["content"],
-            score=r["score"],
-            source=r["source"],
-            metadata=r["metadata"]
-        ) for r in search_results
-    ]
+    results = []
+    for r in search_results:
+        try:
+            clean_metadata = {}
+            for k, v in r.get("metadata", {}).items():
+                if isinstance(v, (str, int, float, bool, type(None), list, dict)):
+                    clean_metadata[k] = v
+                else:
+                    clean_metadata[k] = str(v)
+            
+            results.append(SearchResult(
+                content=str(r.get("content", "")),
+                score=float(r.get("score", 0.0)),
+                source=str(r.get("source", "unknown")),
+                metadata=clean_metadata
+            ))
+        except Exception as e:
+            print(f"Error creating SearchResult: {e}")
+            continue
     
     return SearchResponse(
         answer=answer_data["answer"],

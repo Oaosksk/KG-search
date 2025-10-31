@@ -28,6 +28,10 @@ export default function ChatSearchInterface({ onResults, onAllResults }) {
 
     try {
       const { data } = await searchAPI.search(query)
+      console.log('[SEARCH] API Response:', data)
+      console.log('[SEARCH] Answer:', data.answer)
+      console.log('[SEARCH] Results count:', data.results?.length)
+      console.log('[SEARCH] KG entities count:', data.kg_entities?.length)
       
       const aiMessage = {
         type: 'ai',
@@ -94,7 +98,7 @@ export default function ChatSearchInterface({ onResults, onAllResults }) {
         {messages.map((msg, idx) => (
           <div key={idx} className={`message ${msg.type}`}>
             <div className="message-bubble">
-              <p>{msg.content}</p>
+              <p style={{whiteSpace: 'pre-wrap'}}>{msg.content}</p>
             </div>
           </div>
         ))}

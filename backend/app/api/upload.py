@@ -28,10 +28,21 @@ async def upload_file(file: UploadFile = File(...), user: dict = Depends(get_cur
     # Parse file
     parsed_data = parser.parse_file(file_info["path"])
     
-    # Detect document type
-    sample_content = str(parsed_data[0].get('content', ''))[:2000] if parsed_data else ""
-    doc_info = doc_detector.detect_type(sample_content)
-    doc_type = doc_info.get("type", "unknown")
+    # Detect document type from filename first
+    filename_lower = file.filename.lower()
+    if 'customer' in filename_lower:
+        doc_type = 'customers'
+    elif 'deal' in filename_lower:
+        doc_type = 'deals'
+    elif 'invoice' in filename_lower:
+        doc_type = 'invoices'
+    elif 'order' in filename_lower:
+        doc_type = 'orders'
+    else:
+        # Fallback to LLM detection
+        sample_content = str(parsed_data[0].get('content', ''))[:2000] if parsed_data else ""
+        doc_info = doc_detector.detect_type(sample_content)
+        doc_type = doc_info.get("type", "unknown")
     
     # Build KG with document type awareness
     kg_result = kg_builder.build_graph(parsed_data, file_info["file_id"], user_id, doc_type)

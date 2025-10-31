@@ -10,6 +10,9 @@ async def list_files(user: dict = Depends(get_current_user)):
     from ..services.kg_builder import kg_builder
     user_id = user["id"]
     
+    # Load file registry from disk if not in memory
+    file_manager._load_registry()
+    
     # Load graph to check which files have been processed
     if user_id not in kg_builder.graphs:
         kg_builder._load_graph(user_id)
